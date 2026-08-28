@@ -1,0 +1,28 @@
+[
+  {
+    "date": "2026-08-24",
+    "rate": 1384.23,
+    "unit": "KRW / 1 USD",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW",
+    "sourceDate": "2026-08-24",
+    "fetchedAtUtc": "2026-08-24T06:41:50.476Z",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-08-25",
+    "rate": 1384.26,
+    "unit": "KRW / 1 USD",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW",
+    "fetchedAtUtc": "2026-08-25T01:47:09.060Z",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-08-26",
+    "rate": 1383.07,
+    "unit": "KRW / 1 USD",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW",
+    "sourceDate": "2026-08-25",
+    "fetchedAtUtc": "2026-08-26T01:32:15.981Z",
+    "timezone": "Asia/Seoul"
+  }
+]

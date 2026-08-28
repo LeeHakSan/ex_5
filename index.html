@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>오늘의 진짜 정보판 — USD/KRW 환율</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>오늘의 진짜 정보판</h1>
+      <p class="purpose">이 정보판은 <strong>미국 달러(USD) 대비 원화(KRW) 환율</strong>을 확인하기 위한 것이다.</p>
+    </header>
+
+    <section class="card" id="current-card">
+      <h2>현재값</h2>
+      <div class="current-value">
+        <span id="value">불러오는 중…</span>
+        <span id="unit" class="unit"></span>
+      </div>
+      <dl class="meta">
+        <dt>출처</dt>
+        <dd><a id="source-link" href="#" target="_blank" rel="noopener">불러오는 중…</a></dd>
+        <dt>출처 기준일 (원천 관측)</dt>
+        <dd id="source-date">-</dd>
+        <dt>조회 시각 (내 기기, Asia/Seoul)</dt>
+        <dd id="fetched-at">-</dd>
+        <dt>기준 시간대</dt>
+        <dd>Asia/Seoul (KST, UTC+9)</dd>
+        <dt>상태</dt>
+        <dd id="status-badge" class="badge">-</dd>
+      </dl>
+      <button id="retry-btn" type="button">다시 시도</button>
+    </section>
+
+    <section class="card" id="fault-card">
+      <h2>장애 재현 (검증용)</h2>
+      <p class="hint">아래 링크를 누르면 각 장애 상태를 즉시 재현합니다. URL에 <code>?fault=</code> 쿼리로도 직접 접근할 수 있습니다.</p>
+      <nav class="fault-links">
+        <a href="?">정상</a>
+        <a href="?fault=timeout">timeout</a>
+        <a href="?fault=auth">인증 실패</a>
+        <a href="?fault=ratelimit">호출 제한</a>
+        <a href="?fault=offline">오프라인</a>
+        <a href="?fault=format">응답 형식 변경</a>
+      </nav>
+    </section>
+
+    <section class="card" id="history-card">
+      <h2>날짜별 기록</h2>
+      <p class="hint">기준 시간대: Asia/Seoul. 하루 1건만 저장됩니다.</p>
+      <table id="history-table">
+        <thead>
+          <tr><th>날짜</th><th>값</th><th>단위</th><th>출처 기준일</th><th>조회 시각(KST)</th></tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="5">불러오는 중…</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="compare-card">
+      <h2>어제 대비 변화</h2>
+      <div id="compare-result">비교할 기록을 불러오는 중…</div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
