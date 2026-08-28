@@ -1,6 +1,19 @@
-const API_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW";
+// 통화 선택 추가 (T05): USD 대비 KRW/EUR/JPY/GBP 중 골라 현재값·출처를 그 통화 기준으로 본다.
+const CURRENCIES = {
+  KRW: { unit: "KRW / 1 USD" },
+  EUR: { unit: "EUR / 1 USD" },
+  JPY: { unit: "JPY / 1 USD" },
+  GBP: { unit: "GBP / 1 USD" },
+};
+function apiUrlFor(currency) {
+  return `https://api.frankfurter.dev/v1/latest?base=USD&symbols=${currency}`;
+}
+function lastGoodKeyFor(currency) {
+  return `t04-last-good-rate-${currency}`;
+}
+let currentCurrency = "KRW";
+
 const TIMEZONE = "Asia/Seoul";
-const LAST_GOOD_KEY = "t04-last-good-rate";
 const TIMEOUT_MS = 8000;
 
 const els = {
@@ -13,6 +26,7 @@ const els = {
   retryBtn: document.getElementById("retry-btn"),
   historyBody: document.getElementById("history-body"),
   compareResult: document.getElementById("compare-result"),
+  currencySelect: document.getElementById("currency-select"),
 };
 
 function formatKST(isoString) {
@@ -24,18 +38,18 @@ function formatKST(isoString) {
   }).format(new Date(isoString));
 }
 
-function readLastGood() {
+function readLastGood(currency) {
   try {
-    const raw = localStorage.getItem(LAST_GOOD_KEY);
+    const raw = localStorage.getItem(lastGoodKeyFor(currency));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-function writeLastGood(data) {
+function writeLastGood(currency, data) {
   try {
-    localStorage.setItem(LAST_GOOD_KEY, JSON.stringify(data));
+    localStorage.setItem(lastGoodKeyFor(currency), JSON.stringify(data));
   } catch {
     // localStorage unavailable — page still works, just no cross-reload cache
   }
@@ -50,7 +64,8 @@ class FetchFault extends Error {
 
 // 장애 5종을 결정적으로 재현하기 위한 시뮬레이션 계층.
 // 실제 API에는 인증/요금제가 없어 auth·ratelimit은 모의로만 재현 가능하다.
-async function fetchRate(faultMode) {
+async function fetchRate(faultMode, currency) {
+  const apiUrl = apiUrlFor(currency);
   if (faultMode === "auth") {
     throw new FetchFault("auth", "인증 실패 (401 모의) — API 키/토큰이 거부되었습니다.");
   }
@@ -71,7 +86,7 @@ async function fetchRate(faultMode) {
 
   let res;
   try {
-    res = await fetch(API_URL, { signal: controller.signal });
+    res = await fetch(apiUrl, { signal: controller.signal });
   } catch (err) {
     clearTimeout(timer);
     if (err.name === "AbortError") {
@@ -101,15 +116,16 @@ async function fetchRate(faultMode) {
     throw new FetchFault("format", "응답 형식이 예상과 다릅니다 (JSON 파싱 실패).");
   }
 
-  const rate = data && data.rates && data.rates.KRW;
+  const rate = data && data.rates && data.rates[currency];
   if (typeof rate !== "number" || faultMode === "format") {
-    throw new FetchFault("format", "응답 형식이 예상과 다릅니다 (KRW 항목 없음, 모의 포함).");
+    throw new FetchFault("format", `응답 형식이 예상과 다릅니다 (${currency} 항목 없음, 모의 포함).`);
   }
 
   return {
     value: rate,
-    unit: "KRW / 1 USD",
-    source: API_URL,
+    unit: CURRENCIES[currency].unit,
+    currency,
+    source: apiUrl,
     sourceDate: data.date, // 출처(ECB) 자체가 매긴 환율 기준일 — 우리가 기록한 조회 시각과는 다른 시각
     fetchedAtISO: new Date().toISOString(),
   };
@@ -140,10 +156,11 @@ function renderStale(lastGood, faultMessage) {
     els.fetchedAt.textContent = formatKST(lastGood.fetchedAtISO) + " (KST, 마지막 정상 조회)";
     setBadge("stale", `오래된 데이터 — ${faultMessage}`);
   } else {
+    const fallbackUrl = apiUrlFor(currentCurrency);
     els.value.textContent = "값 없음";
     els.unit.textContent = "";
-    els.sourceLink.href = API_URL;
-    els.sourceLink.textContent = API_URL;
+    els.sourceLink.href = fallbackUrl;
+    els.sourceLink.textContent = fallbackUrl;
     els.sourceDate.textContent = "-";
     els.fetchedAt.textContent = "-";
     setBadge("error", faultMessage);
@@ -156,11 +173,11 @@ async function load(bypassFault = false) {
 
   setBadge("stale", "불러오는 중…");
   try {
-    const data = await fetchRate(faultMode);
-    writeLastGood(data);
+    const data = await fetchRate(faultMode, currentCurrency);
+    writeLastGood(currentCurrency, data);
     renderGood(data);
   } catch (err) {
-    const lastGood = readLastGood();
+    const lastGood = readLastGood(currentCurrency);
     renderStale(lastGood, err.message || "알 수 없는 오류");
   }
 }
@@ -180,12 +197,14 @@ async function loadHistory() {
     return;
   }
 
-  history.sort((a, b) => (a.date < b.date ? 1 : -1)); // 최신 날짜 먼저
+  // 기존 기록에는 currency 필드가 없다 — 그런 기록은 KRW로 취급한다 (하위 호환).
+  const filtered = history.filter((h) => (h.currency || "KRW") === currentCurrency);
+  filtered.sort((a, b) => (a.date < b.date ? 1 : -1)); // 최신 날짜 먼저
 
-  if (history.length === 0) {
+  if (filtered.length === 0) {
     els.historyBody.innerHTML = "<tr><td colspan='5'>아직 저장된 날짜별 기록이 없습니다.</td></tr>";
   } else {
-    els.historyBody.innerHTML = history
+    els.historyBody.innerHTML = filtered
       .map(
         (h) =>
           `<tr><td>${h.date}</td><td>${h.rate.toLocaleString("ko-KR", { maximumFractionDigits: 2 })}</td><td>${h.unit}</td><td>${h.sourceDate || "-"}</td><td>${formatKST(h.fetchedAtUtc)} (KST)</td></tr>`
@@ -193,7 +212,7 @@ async function loadHistory() {
       .join("");
   }
 
-  renderCompare(history);
+  renderCompare(filtered);
 }
 
 function renderCompare(historyDesc) {
@@ -214,5 +233,17 @@ function renderCompare(historyDesc) {
     `<span class="${cls}">차이: ${diff >= 0 ? "+" : ""}${diff.toFixed(2)} ${latest.unit} (${direction})</span>`;
 }
 
+els.currencySelect.addEventListener("change", () => {
+  currentCurrency = els.currencySelect.value;
+  load(false);
+  loadHistory();
+});
+
+// 자동 검증 편의용 (요구사항 밖 부가 기능): ?currency= 로 초기 통화를 딥링크할 수 있다.
+const urlCurrency = new URLSearchParams(location.search).get("currency");
+if (urlCurrency && CURRENCIES[urlCurrency]) {
+  els.currencySelect.value = urlCurrency;
+}
+currentCurrency = els.currencySelect.value; // T-01: 기본 선택값(KRW)에서 시작
 load(false);
 loadHistory();

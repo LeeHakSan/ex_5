@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>오늘의 진짜 정보판 — USD/KRW 환율</title>
+<title>오늘의 진짜 정보판 — USD 환율</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -18,6 +18,15 @@
       <div class="current-value">
         <span id="value">불러오는 중…</span>
         <span id="unit" class="unit"></span>
+      </div>
+      <div class="currency-picker">
+        <label for="currency-select">통화</label>
+        <select id="currency-select">
+          <option value="KRW">KRW</option>
+          <option value="EUR">EUR</option>
+          <option value="JPY">JPY</option>
+          <option value="GBP">GBP</option>
+        </select>
       </div>
       <dl class="meta">
         <dt>출처</dt>
