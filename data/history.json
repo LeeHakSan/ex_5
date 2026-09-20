@@ -944,5 +944,45 @@
     "sourceDate": "2026-09-18",
     "fetchedAtUtc": "2026-09-19T04:34:09.804Z",
     "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-09-20",
+    "rate": 0.8726,
+    "unit": "EUR / 1 USD",
+    "currency": "EUR",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR",
+    "sourceDate": "2026-09-18",
+    "fetchedAtUtc": "2026-09-20T04:50:40.246Z",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-09-20",
+    "rate": 0.74939,
+    "unit": "GBP / 1 USD",
+    "currency": "GBP",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=GBP",
+    "sourceDate": "2026-09-18",
+    "fetchedAtUtc": "2026-09-20T04:50:40.265Z",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-09-20",
+    "rate": 157.89,
+    "unit": "JPY / 1 USD",
+    "currency": "JPY",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=JPY",
+    "sourceDate": "2026-09-18",
+    "fetchedAtUtc": "2026-09-20T04:50:40.255Z",
+    "timezone": "Asia/Seoul"
+  },
+  {
+    "date": "2026-09-20",
+    "rate": 1388.1,
+    "unit": "KRW / 1 USD",
+    "currency": "KRW",
+    "source": "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW",
+    "sourceDate": "2026-09-18",
+    "fetchedAtUtc": "2026-09-20T04:50:40.237Z",
+    "timezone": "Asia/Seoul"
   }
 ]
